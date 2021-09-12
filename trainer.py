@@ -113,7 +113,7 @@ class Trainer(object):
         for i in range(1, epoch):
             if i % 5 == 0:
                 continue
-            save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{epoch + 1}.pth')
+            save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{i}.pth')
             if os.path.isfile(save_path):
                 os.remove(save_path)
 
