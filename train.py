@@ -64,9 +64,7 @@ def train(trainer:Trainer, config, device, start_epoch, end_epoch, save_cp=True,
         epoch_loss = 0
         epoch_step = 0
 
-        with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{end_epoch}', unit='img', ncols=50) as pbar:
-            # init pbar
-            pbar.update(n_train * (start_epoch - 1))
+        with tqdm(initial=n_train * (start_epoch - 1), total=n_train, desc=f'Epoch {epoch + 1}/{end_epoch}', unit='img', ncols=50) as pbar:
             for i, batch in enumerate(trainer.train_dataloader):
                 global_step += 1
                 epoch_step += 1
