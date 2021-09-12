@@ -101,7 +101,7 @@ class Trainer(object):
         """save the checkpoint
         """
         save_prefix = 'Yolov4_epoch'
-        save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{epoch + 1}.pth')
+        save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{epoch}.pth')
         data = {'model_state_dict': self.model.state_dict(),
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'scheduler_state_dict': self.scheduler.state_dict()}
