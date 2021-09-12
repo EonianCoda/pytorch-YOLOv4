@@ -88,7 +88,7 @@ class Trainer(object):
         if self.config.pretrained:
             ckp = torch.load(self.config.pretrained)
             # only use conv137
-            if not isinstance(ckp, dict):
+            if not ckp.get('model_state_dict'):
                 model_weight = ckp
                 self.model.init_conv137(model_weight)
             # read all tools
@@ -106,3 +106,14 @@ class Trainer(object):
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'scheduler_state_dict': self.scheduler.state_dict()}
         torch.save(data, save_path)
+        self.auto_delete()
+
+    def auto_delete(self, epoch:int):
+        save_prefix = 'Yolov4_epoch'
+        for i in range(1, epoch):
+            if i % 5 == 0:
+                continue
+            save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{epoch + 1}.pth')
+            if os.path.isfile(save_path):
+                os.remove(save_path)
+

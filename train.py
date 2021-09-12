@@ -10,28 +10,19 @@
     @Detail    :
 
 '''
-import time
 import logging
 import os, sys
 import argparse
-from collections import deque
 import datetime
 from trainer import Trainer
 
-import cv2
 from tqdm import tqdm
-import numpy as np
 import torch
-from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from easydict import EasyDict as edict
 
-from dataset import Yolo_dataset
 from cfg import Cfg
 
-from tool.tv_reference.utils import collate_fn as val_collate
-from tool.tv_reference.coco_utils import convert_to_coco_api
-from tool.tv_reference.coco_eval import CocoEvaluator
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -43,17 +34,17 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
-def train(trainer:Trainer, config, device, epochs=5, save_cp=True, log_step=20):
+def train(trainer:Trainer, config, device, start_epoch, end_epoch, save_cp=True, log_step=20):
     n_train = len(trainer.train_dataset)
     #device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     writer = SummaryWriter(log_dir=config.TRAIN_TENSORBOARD_DIR,
                            filename_suffix=f'OPT_{config.TRAIN_OPTIMIZER}_LR_{config.learning_rate}_BS_{config.batch}_Sub_{config.subdivisions}_Size_{config.width}',
                            comment=f'OPT_{config.TRAIN_OPTIMIZER}_LR_{config.learning_rate}_BS_{config.batch}_Sub_{config.subdivisions}_Size_{config.width}')
 
-    max_itr = config.TRAIN_EPOCHS * n_train
-    global_step = 0
+    max_itr = end_epoch * n_train
+    global_step = len(trainer.train_dataloader) * (start_epoch - 1)
     logging.info(f'''Starting training:
-        Epochs:          {epochs}
+        Epochs:          {end_epoch}
         Batch size:      {config.batch}
         Subdivisions:    {config.subdivisions}
         Learning rate:   {config.learning_rate}
@@ -68,12 +59,14 @@ def train(trainer:Trainer, config, device, epochs=5, save_cp=True, log_step=20):
     ''')
 
     trainer.model.train()
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, end_epoch + 1):
         # model.train()
         epoch_loss = 0
         epoch_step = 0
 
-        with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='img', ncols=50) as pbar:
+        with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{end_epoch}', unit='img', ncols=50) as pbar:
+            # init pbar
+            pbar.update(n_train * (start_epoch - 1))
             for i, batch in enumerate(trainer.train_dataloader):
                 global_step += 1
                 epoch_step += 1
@@ -122,6 +115,7 @@ def train(trainer:Trainer, config, device, epochs=5, save_cp=True, log_step=20):
             # save checkpoint
             os.makedirs(config.checkpoints, exist_ok=True)  
             trainer.save_ckp(epoch)
+            trainer.auto_delete(epoch)
 
     writer.close()
 
@@ -156,7 +150,11 @@ def get_args(**kwargs):
         '-keep-checkpoint-max', type=int, default=10,
         help='maximum number of checkpoints to keep. If set 0, all checkpoints will be kept',
         dest='keep_checkpoint_max')
+
+    parser.add_argument('-start_epoch', type=int, default=1)
+    parser.add_argument('-end_epoch', type=int, default=1)
     args = vars(parser.parse_args())
+
 
     # for k in args.keys():
     #     cfg[k] = args.get(k)
@@ -216,5 +214,6 @@ if __name__ == "__main__":
     # trainer:Trainer, config,
     train(trainer=trainer,
             config=cfg,
-            epochs=cfg.TRAIN_EPOCHS,
+            start_epoch=cfg.start_epoch,
+            end_epoch=cfg.start_epoch,
             device=device, )
