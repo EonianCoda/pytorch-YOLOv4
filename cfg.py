@@ -18,8 +18,8 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 Cfg = EasyDict()
 
-Cfg.use_darknet_cfg = True
-Cfg.cfgfile = os.path.join(_BASE_DIR, 'cfg', 'yolov4.cfg')
+Cfg.use_darknet_cfg = False
+Cfg.cfgfile = os.path.join(_BASE_DIR, 'cfg', 'yolov4_voc.cfg')
 
 Cfg.batch = 64
 Cfg.subdivisions = 16
@@ -35,8 +35,8 @@ Cfg.hue = .1
 
 Cfg.learning_rate = 0.00261
 Cfg.burn_in = 1000
-Cfg.max_batches = 500500
-Cfg.steps = [400000, 450000]
+Cfg.max_batches = 40000
+Cfg.steps = [32000, 36000]
 Cfg.policy = Cfg.steps
 Cfg.scales = .1, .1
 
@@ -45,7 +45,7 @@ Cfg.mosaic = 1
 
 Cfg.letter_box = 0
 Cfg.jitter = 0.2
-Cfg.classes = 80
+Cfg.classes = 20
 Cfg.track = 0
 Cfg.w = Cfg.width
 Cfg.h = Cfg.height
@@ -53,9 +53,11 @@ Cfg.flip = 1
 Cfg.blur = 0
 Cfg.gaussian = 0
 Cfg.boxes = 60  # box num
-Cfg.TRAIN_EPOCHS = 300
-Cfg.train_label = os.path.join(_BASE_DIR, 'data', 'train.txt')
-Cfg.val_label = os.path.join(_BASE_DIR, 'data' ,'val.txt')
+Cfg.TRAIN_EPOCHS = 75
+
+ANNOT_DIR = '/home/deeplab307/Documents/Anaconda/Shiang/IL/dataset/voc2007/annotations/'
+Cfg.train_label = os.path.join(ANNOT_DIR, 'train.txt')
+Cfg.val_label = os.path.join(ANNOT_DIR, 'voc2007_yolov4_test.txt')
 Cfg.TRAIN_OPTIMIZER = 'adam'
 '''
 image_path1 x1,y1,x2,y2,id x1,y1,x2,y2,id x1,y1,x2,y2,id ...
@@ -70,7 +72,7 @@ elif Cfg.cutmix:
 elif Cfg.mosaic:
     Cfg.mixup = 3
 
-Cfg.checkpoints = os.path.join(_BASE_DIR, 'checkpoints')
+Cfg.checkpoints = os.path.join(_BASE_DIR, 'checkpoint')
 Cfg.TRAIN_TENSORBOARD_DIR = os.path.join(_BASE_DIR, 'log')
 
 Cfg.iou_type = 'iou'  # 'giou', 'diou', 'ciou'

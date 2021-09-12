@@ -412,11 +412,29 @@ def train(model, device, config, epochs=5, batch_size=1, save_cp=True, log_step=
 
                 pbar.update(images.shape[0])
 
+            # save checkpoint
+            if save_cp:
+                try:
+                    os.makedirs(config.checkpoints, exist_ok=True)
+                    logging.info('Created checkpoint directory')
+                except OSError:
+                    pass
+                save_path = os.path.join(config.checkpoints, f'{save_prefix}{epoch + 1}.pth')
+                torch.save(model.state_dict(), save_path)
+                logging.info(f'Checkpoint {epoch + 1} saved !')
+                saved_models.append(save_path)
+                if len(saved_models) > config.keep_checkpoint_max > 0:
+                    model_to_remove = saved_models.popleft()
+                    try:
+                        os.remove(model_to_remove)
+                    except:
+                        logging.info(f'failed to remove {model_to_remove}')
+
+            # Evaluation
             if cfg.use_darknet_cfg:
                 eval_model = Darknet(cfg.cfgfile, inference=True)
             else:
                 eval_model = Yolov4(cfg.pretrained, n_classes=cfg.classes, inference=True)
-            # eval_model = Yolov4(yolov4conv137weight=None, n_classes=config.classes, inference=True)
             if torch.cuda.device_count() > 1:
                 eval_model.load_state_dict(model.module.state_dict())
             else:
@@ -439,23 +457,6 @@ def train(model, device, config, epochs=5, batch_size=1, save_cp=True, log_step=
             writer.add_scalar('train/AR_medium', stats[10], global_step)
             writer.add_scalar('train/AR_large', stats[11], global_step)
 
-            if save_cp:
-                try:
-                    # os.mkdir(config.checkpoints)
-                    os.makedirs(config.checkpoints, exist_ok=True)
-                    logging.info('Created checkpoint directory')
-                except OSError:
-                    pass
-                save_path = os.path.join(config.checkpoints, f'{save_prefix}{epoch + 1}.pth')
-                torch.save(model.state_dict(), save_path)
-                logging.info(f'Checkpoint {epoch + 1} saved !')
-                saved_models.append(save_path)
-                if len(saved_models) > config.keep_checkpoint_max > 0:
-                    model_to_remove = saved_models.popleft()
-                    try:
-                        os.remove(model_to_remove)
-                    except:
-                        logging.info(f'failed to remove {model_to_remove}')
 
     writer.close()
 
