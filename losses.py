@@ -3,6 +3,8 @@ import torch
 import math
 import numpy as np
 import torch.nn as nn
+from torch.nn import functional as F
+
 def bboxes_iou(bboxes_a, bboxes_b, xyxy=True, GIoU=False, DIoU=False, CIoU=False):
     """Calculate the Intersection of Unions (IoUs) between bounding boxes.
     IoU is calculated as a ratio of area of the intersection
