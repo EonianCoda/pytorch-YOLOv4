@@ -215,5 +215,5 @@ if __name__ == "__main__":
     train(trainer=trainer,
             config=cfg,
             start_epoch=cfg.start_epoch,
-            end_epoch=cfg.start_epoch,
+            end_epoch=cfg.end_epoch,
             device=device, )

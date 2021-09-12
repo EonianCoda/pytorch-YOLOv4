@@ -94,7 +94,7 @@ class Trainer(object):
             # read all tools
             else:
                 self.model.load_state_dict(ckp['model_state_dict'])
-                self.optimizer.load_state_dict(ckp['optimizer.state_dict'])
+                self.optimizer.load_state_dict(ckp['optimizer_state_dict'])
                 self.scheduler.load_state_dict(ckp['scheduler_state_dict'])
 
     def save_ckp(self, epoch:int):
@@ -106,7 +106,7 @@ class Trainer(object):
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'scheduler_state_dict': self.scheduler.state_dict()}
         torch.save(data, save_path)
-        self.auto_delete()
+        
 
     def auto_delete(self, epoch:int):
         save_prefix = 'Yolov4_epoch'
