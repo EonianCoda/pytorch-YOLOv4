@@ -110,10 +110,11 @@ class Trainer(object):
 
     def auto_delete(self, epoch:int):
         save_prefix = 'Yolov4_epoch'
-        for i in range(1, epoch):
-            if i % 5 == 0:
-                continue
-            save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{i}.pth')
-            if os.path.isfile(save_path):
-                os.remove(save_path)
+        if epoch % 5 == 0:
+            for i in range(1, epoch + 1):
+                if i % 5 == 0:
+                    continue
+                save_path = os.path.join(self.config.checkpoints, f'{save_prefix}{i}.pth')
+                if os.path.isfile(save_path):
+                    os.remove(save_path)
 
