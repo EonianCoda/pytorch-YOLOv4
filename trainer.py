@@ -85,8 +85,8 @@ class Trainer(object):
         """load the checkpoint, resume training
         """
         # read checkpoint
-        if self.pretrained:
-            ckp = torch.load(self.pretrained)
+        if self.config.pretrained:
+            ckp = torch.load(self.config.pretrained)
             # only use conv137
             if not isinstance(ckp, dict):
                 model_weight = ckp
