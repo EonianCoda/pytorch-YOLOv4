@@ -127,10 +127,7 @@ def evaluation(model, device, config):
     val_loader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=True, num_workers=8,
                             pin_memory=True, drop_last=True, collate_fn=val_collate)
     # Evaluation
-    if cfg.use_darknet_cfg:
-        eval_model = Darknet(cfg.cfgfile, inference=True)
-    else:
-        eval_model = Yolov4(cfg.pretrained, n_classes=cfg.classes, inference=True)
+    eval_model = Yolov4(n_classes=cfg.classes, inference=True)
     if torch.cuda.device_count() > 1:
         eval_model.load_state_dict(model.module.state_dict())
     else:
