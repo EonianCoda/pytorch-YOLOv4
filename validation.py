@@ -173,11 +173,11 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f'Using device {device}')
 
-    if cfg.use_darknet_cfg:
-        model = Darknet(cfg.cfgfile)
-    else:
-        model = Yolov4(cfg.pretrained, n_classes=cfg.classes)
 
+    model = Yolov4(n_classes=cfg.classes)
+    ckp = torch.load(cfg.pretrained)
+    model.load_state_dict(ckp['model_state_dict'])
+    del ckp
     try:
         evaluation(model=model,
                     config=cfg,
