@@ -277,7 +277,7 @@ class Neck(nn.Module):
         self.conv19 = Conv_Bn_Activation(128, 256, 3, 1, 'leaky')
         self.conv20 = Conv_Bn_Activation(256, 128, 1, 1, 'leaky')
 
-    def forward(self, input, downsample4, downsample3, inference=False):
+    def forward(self, input, downsample4, downsample3):
         x1 = self.conv1(input)
         x2 = self.conv2(x1)
         x3 = self.conv3(x2)
@@ -409,7 +409,6 @@ class Yolov4Head(nn.Module):
 class Yolov4(nn.Module):
     def __init__(self, n_classes=80, inference=False):
         super().__init__()
-
         output_ch = (4 + 1 + n_classes) * 3
 
         # backbone
@@ -422,6 +421,15 @@ class Yolov4(nn.Module):
         self.neck = Neck(inference)  
         # head
         self.head = Yolov4Head(output_ch, n_classes, inference)
+
+    def to_inference_mode(self):
+        self.neck.inference = True
+        self.head.inference = True
+        self.eval()
+    def to_train_mode(self):
+        self.neck.inference = False
+        self.head.inference = False
+        self.train()
 
     def init_conv137(self, yolov4conv137weight=None):
         """only init backbone and neck, except for head

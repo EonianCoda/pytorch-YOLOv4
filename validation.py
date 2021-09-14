@@ -31,7 +31,6 @@ from easydict import EasyDict as edict
 from dataset import Yolo_dataset
 from cfg import Cfg
 from models import Yolov4
-from tool.darknet2pytorch import Darknet
 
 from tool.tv_reference.utils import collate_fn as val_collate
 from tool.tv_reference.coco_utils import convert_to_coco_api
@@ -121,20 +120,15 @@ def evaluate(model, data_loader, cfg, device, logger=None, **kwargs):
     return coco_evaluator
 
 
-def evaluation(model, device, config):
+def evaluation(model:Yolov4, device, config):
     val_dataset = Yolo_dataset(config.val_label, config, train=False)
 
     val_loader = DataLoader(val_dataset, batch_size=config.batch_size, shuffle=True, num_workers=8,
                             pin_memory=True, drop_last=True, collate_fn=val_collate)
     # Evaluation
-    eval_model = Yolov4(n_classes=cfg.classes, inference=True)
-    if torch.cuda.device_count() > 1:
-        eval_model.load_state_dict(model.module.state_dict())
-    else:
-        eval_model.load_state_dict(model.state_dict())
-    eval_model.to(device)
-    evaluator = evaluate(eval_model, val_loader, config, device)
-    del eval_model
+    model.cuda()
+    model.to_inference_mode()
+    evaluator = evaluate(model, val_loader, config, device)
 
 
 def get_args(**kwargs):
@@ -170,7 +164,9 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f'Using device {device}')
 
-
+    # Read checkpoint
+    if cfg.pretrained == None:
+        raise ValueError("pretrained is None!")
     model = Yolov4(n_classes=cfg.classes)
     ckp = torch.load(cfg.pretrained)
     model.load_state_dict(ckp['model_state_dict'])
